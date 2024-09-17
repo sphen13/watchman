@@ -2,9 +2,11 @@
 
 # PLUGIN:  Munki Installs
 # AUTHOR:  Stephen Boyle @sphen13
-# DATE:    2022-03-07
-# VERSION: 1.3
+# DATE:    2024-09-17
+# VERSION: 1.4
 
+# 2024-09-17	v1.4
+#               - notify when we have repeated updates - new pref key
 # 2022-03-07	v1.3
 #               - update python shebang + python3
 # 2020-06-22	v1.2
@@ -37,6 +39,7 @@ def setARDInfo(value):
 settings_plist = '/Library/MonitoringClient/PluginSupport/_check_munki_installs_settings.plist'
 base_settings = {
     'ignoreInstalls' : '',
+    'repeatedUpdateThreshold'  : 3,
     'PrefPaneVisibility' : True,
 }
 settings = check_settings(base_settings, settings_plist)
@@ -58,6 +61,7 @@ updates = []
 updatesDate = []
 appleUpdates = []
 appleUpdatesDate = []
+repeatedUpdates = {}
 
 exists = os.path.isfile(munkiInstalls)
 if exists:
@@ -76,9 +80,17 @@ if exists:
                         if currentUpdate not in updates and not any(s in currentUpdate for s in ignoreList):
                             updates.append(currentUpdate)
                             updatesDate.append(ts.strftime("%Y-%m-%d"))
+                        if currentUpdate in repeatedUpdates:
+                            repeatedUpdates[currentUpdate] += 1
+                        else:
+                            repeatedUpdates[currentUpdate] = 1
 
     updatesCount = len(updates)
     appleUpdatesCount = len(appleUpdates)
+    repeatingUpdates = {k: v for k, v in repeatedUpdates.items() if v >= settings['repeatedUpdateThreshold']}
+    repeatingUpdatesCount = len(repeatingUpdates)
+
+    setARDInfo(updatesCount+appleUpdatesCount)
 
     print('%d Updates Installed in the last 30 days' % (updatesCount+appleUpdatesCount))
     if updates:
@@ -89,8 +101,11 @@ if exists:
         print('\n%d System Software Update(s):' % appleUpdatesCount)
         for x,y in zip(appleUpdatesDate,appleUpdates):
             print(('- [{}] {}'.format(x, y)))
-
-    setARDInfo(updatesCount+appleUpdatesCount)
+    if repeatingUpdates:
+        print('\n%d Update(s) applied %d or more times:' % (repeatingUpdatesCount, settings['repeatedUpdateThreshold']))
+        for update, count in repeatingUpdates.items():
+            print(f"{update}: {count} times")
+        sys.exit(2)
 
     # we have info to report - do it
     sys.exit(0)

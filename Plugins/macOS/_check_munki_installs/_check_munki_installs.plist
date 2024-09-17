@@ -7,7 +7,7 @@
     <key>PluginUUID</key>
     <string>72461E25-6EDE-4E31-B284-FBAED43DD9A0</string>
     <key>PluginVersion</key>
-    <string>1.3</string>
+    <string>1.4</string>
     <key>PluginOptions</key>
     <array>
       <dict>
@@ -42,6 +42,23 @@
           <string>TextField</string>
           <key>Value</key>
           <string></string>
+        </dict>
+      </dict>
+      <dict>
+        <key>SettingStorageKey</key>
+        <string>repeatedUpdateThreshold</string>
+        <key>SettingStoragePath</key>
+        <string>/Library/MonitoringClient/PluginSupport/_check_munki_installs_settings.plist</string>
+        <key>SettingTitle</key>
+        <string>Number of repeated updates required before triggering Alert</string>
+        <key>SettingTitleHint</key>
+        <string></string>
+        <key>SettingType</key>
+        <dict>
+          <key>Type</key>
+          <string>NumberPicker</string>
+          <key>Value</key>
+          <string>1-90</string>
         </dict>
       </dict>
     </array>
